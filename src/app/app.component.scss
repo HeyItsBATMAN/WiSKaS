@@ -2,6 +2,7 @@
   display: block;
   max-width: 1024px;
   margin: 0 auto;
+  padding-bottom: 1rem;
 }
 
 h1.colored-title {
@@ -78,6 +79,20 @@ h1.colored-title {
       & + .column {
         margin-left: 0.1rem;
       }
+    }
+  }
+}
+
+footer {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  a {
+    display: flex;
+    align-items: center;
+    color: var(--accent);
+    > * + * {
+      margin-left: 0.5rem;
     }
   }
 }
