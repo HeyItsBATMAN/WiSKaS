@@ -140,6 +140,7 @@ export class AppComponent {
         outcomes.push(gradedSum + grade * factor);
       }
     }
+    if (outcomes.length === 0) outcomes.push(gradedSum);
     return outcomes.map(o => o * subject.percentageAsNum);
   }
 
