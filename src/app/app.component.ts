@@ -120,6 +120,20 @@ export class AppComponent {
     this.state.papers.push(new Module());
   }
 
+  private distributeWeights(likely: number) {
+    const index = GRADES.findIndex(g => g === likely);
+    const arr = new Array<number>();
+    for (let i = 0; i < 3; i++) {
+      for (let j = 3 - i; j > 0; j--) {
+        const left = GRADES[index - i];
+        const right = GRADES[index + i];
+        if (left && left !== right) arr.push(left);
+        if (right) arr.push(right);
+      }
+    }
+    return arr.concat(GRADES).sort((a, b) => a - b);
+  }
+
   private getSubjectDistribution(subject: Subject) {
     const weights = Weighting.all;
     const totalCredits = subject.totalCredits;
@@ -130,10 +144,10 @@ export class AppComponent {
     const outcomes = new Array<number>();
     for (const mod of subject.ungraded) {
       const weight = weights.find(w => w.moduleRef === mod.id)!;
-      // TODO: change how likely grade affects weighting
-      const allowed = GRADES.filter(g => g >= weight.best && g <= weight.worst)
-        .concat(weight.likely)
-        .sort((a, b) => a - b);
+
+      const allowed = this.distributeWeights(weight.likely).filter(
+        g => g >= weight.best && g <= weight.worst,
+      );
 
       const factor = mod.credits / totalCredits;
       for (const grade of allowed) {
