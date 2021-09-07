@@ -1,6 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 :root {
   --primary: #673ab7;
+  --accent: #ff4081;
   --bg: #1f2430;
   --fg: #cbccc6;
 }
@@ -14,6 +15,7 @@ body {
   padding: 1rem;
   font-family: system, -apple-system, '.SFNSText-Regular', 'San Francisco', 'Roboto', 'Segoe UI',
     'Helvetica Neue', 'Lucida Grande', sans-serif;
+  color: var(--bg);
 }
 
 .title-with-button {
@@ -28,6 +30,10 @@ body {
     font-size: 0.8rem;
     font-weight: normal;
   }
+}
+
+.warn {
+  color: var(--accent);
 }
 
 code {

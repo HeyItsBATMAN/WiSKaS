@@ -12,6 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { AppComponent } from './app.component';
 import { SubjectComponent } from './subject/subject.component';
@@ -27,6 +28,7 @@ const matModules = [
   MatSlideToggleModule,
   MatExpansionModule,
   MatTooltipModule,
+  MatSnackBarModule,
 ];
 
 @NgModule({

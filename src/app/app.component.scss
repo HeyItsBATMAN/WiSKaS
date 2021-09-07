@@ -19,7 +19,12 @@ h1.colored-title {
   margin: 0.5rem 0;
 }
 
+.mat-expansion-panel-header-title {
+  align-items: center;
+}
+
 .mat-expansion-panel-header-description {
+  align-items: center;
   text-align: right;
   span:first-child {
     flex-grow: 1;

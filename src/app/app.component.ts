@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject } from 'rxjs';
+
 import { Subject } from './subject/subject.component';
 import { Module } from './module/module.component';
 import { Weighting } from './weighting/weighting.component';
@@ -53,7 +55,7 @@ export class AppComponent {
 
   public labeledResults: { [key: string]: number } = {};
 
-  constructor() {
+  constructor(private snackbar: MatSnackBar) {
     (window as any)['saveState'] = () => this.saveState();
     (window as any)['loadState'] = () => this.loadState();
 
@@ -72,24 +74,46 @@ export class AppComponent {
     return Object.values(this.labeledResults).reduce((acc, val) => acc + val, 0);
   }
 
+  get isOneHundred() {
+    return this.state.subjects.reduce((acc, s) => acc + s.percentage, 0) === 100;
+  }
+
+  get hasSaveState() {
+    return !!localStorage.getItem('saveState');
+  }
+
   public getProbability(key: string) {
     return (100 * (this.labeledResults[key] / this.distSize)).toFixed(1) + '%';
   }
 
-  private loadState() {
+  public showMessage(message: string) {
+    this.snackbar.open(message, 'OK Cool!', { duration: 3000 });
+  }
+
+  public loadState() {
     const savedSubjects = localStorage.getItem('saveState');
+    this.state.subjects.splice(0, this.state.subjects.length);
+    this.state.papers.splice(0, this.state.papers.length);
     const parsed = savedSubjects ? (JSON.parse(savedSubjects) as ISaveState) : base;
     this.state.subjects.push(...parsed.subjects.map(s => new Subject(s)));
     this.state.papers.push(...parsed.papers.map(s => new Module(s)));
     setTimeout(() => this.calculate(), 100);
+    this.showMessage('Zustand geladen');
   }
 
-  private saveState() {
+  public saveState() {
     localStorage.setItem('saveState', JSON.stringify(this.state));
+    this.showMessage('Zustand gespeichert');
   }
 
   public addSubject() {
     this.state.subjects.push(new Subject());
+  }
+
+  public removeSubject(subject: Subject) {
+    const index = this.state.subjects.findIndex(s => s.id === subject.id);
+    if (index < 0) return;
+    this.state.subjects.splice(index, 1);
   }
 
   public addPaper() {

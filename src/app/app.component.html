@@ -9,25 +9,52 @@
   <button mat-mini-fab color="primary" (click)="addSubject()">
     <mat-icon>add</mat-icon>
   </button>
+  <button
+    mat-mini-fab
+    color="primary"
+    [disabled]="state.subjects.length === 0"
+    (click)="saveState()"
+    matTooltip="Speicher deine Notengruppen im Browser, damit sie beim nächsten mal noch da sind"
+  >
+    <mat-icon>save</mat-icon>
+  </button>
+  <button
+    mat-mini-fab
+    color="primary"
+    [disabled]="!hasSaveState"
+    (click)="loadState()"
+    matTooltip="Lade den letzten gespeicherten Zustand"
+  >
+    <mat-icon>restart_alt</mat-icon>
+  </button>
 </h2>
 
 <mat-accordion>
   <mat-expansion-panel *ngFor="let subject of state.subjects">
     <mat-expansion-panel-header>
       <mat-panel-title>
-        {{ subject.title }}
+        <span>{{ subject.title }}</span>
       </mat-panel-title>
       <mat-panel-description>
         <span>
           {{ subject.modules.length }} Module, davon {{ subject.ungraded.length }} unbenotet
         </span>
         <span> {{ subject.percentage }}% der Gesamtnote </span>
+        <button
+          mat-icon-button
+          (click)="removeSubject(subject)"
+          matTooltip="Unwiderruflich löschen"
+        >
+          <mat-icon>delete_outline</mat-icon>
+        </button>
       </mat-panel-description>
     </mat-expansion-panel-header>
 
     <app-subject [subject]="subject" (subjectChanged)="calculate()"></app-subject>
   </mat-expansion-panel>
 </mat-accordion>
+
+<p *ngIf="!isOneHundred" class="warn">Anteile der Notengruppen ergeben nicht 100%</p>
 
 <h2>Gewichtung</h2>
 
@@ -44,7 +71,7 @@
 
 <h2 class="title-with-button">
   <span>Ergebnisse</span>
-  <button mat-flat-button color="primary" (click)="calculate()">Neu berechnen!</button>
+  <!--button mat-flat-button color="primary" (click)="calculate()">Neu berechnen!</button-->
   <span class="small"><i>Angaben ohne Gewähr</i></span>
 </h2>
 
