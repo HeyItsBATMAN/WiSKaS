@@ -44,6 +44,19 @@ h1.colored-title {
 
   border-bottom: solid 0.2rem var(--primary);
 
+  @keyframes column-slide-in {
+    from {
+      opacity: 0;
+      height: 50%;
+      // transform: translateY(100%) scaleY(0);
+    }
+    to {
+      opacity: 1;
+      height: var(--height);
+      // transform: translateY(0) scaleY(1);
+    }
+  }
+
   .column {
     height: var(--height);
     background: var(--primary);
@@ -54,6 +67,8 @@ h1.colored-title {
     border-radius: 0.25rem 0.25rem 0 0;
 
     transition: all 250ms ease;
+
+    animation: column-slide-in 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 
     & + .column {
       margin-left: 0.5rem;
