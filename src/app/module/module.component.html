@@ -1,0 +1,28 @@
+<mat-form-field appearance="fill">
+  <mat-label>{{ isPaper ? 'Arbeit' : 'Modulname' }}</mat-label>
+  <input
+    matInput
+    [placeholder]="isPaper ? 'z.B. Bachelorarbeit' : 'z.B. AM1'"
+    [(ngModel)]="mod.title"
+    (change)="emitChange()"
+  />
+</mat-form-field>
+
+<mat-form-field appearance="fill">
+  <mat-label>Credit Points</mat-label>
+  <input
+    matInput
+    type="number"
+    min="1"
+    max="100"
+    [(ngModel)]="mod.credits"
+    (change)="emitChange()"
+  />
+</mat-form-field>
+
+<mat-form-field appearance="fill">
+  <mat-label>Note</mat-label>
+  <mat-select [(ngModel)]="mod.grade" (selectionChange)="emitChange()">
+    <mat-option *ngFor="let grade of possibleGrades" [value]="grade"> {{ grade }} </mat-option>
+  </mat-select>
+</mat-form-field>

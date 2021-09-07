@@ -1,0 +1,24 @@
+<ng-container *ngIf="weighting">
+  <span>{{ title }}</span>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Beste</mat-label>
+    <mat-select [(ngModel)]="weighting.best" (selectionChange)="emitChange()">
+      <mat-option *ngFor="let grade of possibleGrades" [value]="grade"> {{ grade }} </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Schlechteste</mat-label>
+    <mat-select [(ngModel)]="weighting.worst" (selectionChange)="emitChange()">
+      <mat-option *ngFor="let grade of possibleGrades" [value]="grade"> {{ grade }} </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Wahrscheinlichste</mat-label>
+    <mat-select [(ngModel)]="weighting.likely" (selectionChange)="emitChange()">
+      <mat-option *ngFor="let grade of possibleGrades" [value]="grade"> {{ grade }} </mat-option>
+    </mat-select>
+  </mat-form-field>
+</ng-container>

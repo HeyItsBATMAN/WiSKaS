@@ -1,0 +1,36 @@
+<mat-form-field appearance="fill">
+  <mat-label>Name</mat-label>
+  <input
+    matInput
+    placeholder="Fachname oder Arbeit"
+    [(ngModel)]="subject.title"
+    (change)="emitChange()"
+  />
+</mat-form-field>
+
+<mat-form-field appearance="fill">
+  <mat-label>Anteil an Gesamtnote (in Prozent)</mat-label>
+  <input
+    matInput
+    type="number"
+    min="1"
+    max="100"
+    [(ngModel)]="subject.percentage"
+    (change)="emitChange()"
+  />
+</mat-form-field>
+
+<h3 class="title-with-button">
+  <span>Module</span>
+  <button mat-mini-fab color="primary" (click)="addModule()">
+    <mat-icon>add</mat-icon>
+  </button>
+  <span></span>
+</h3>
+
+<app-module
+  *ngFor="let mod of subject.modules"
+  (moduleChanged)="emitChange()"
+  [module]="mod"
+  [subject]="subject"
+></app-module>

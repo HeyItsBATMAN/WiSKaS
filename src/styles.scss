@@ -1,1 +1,48 @@
 /* You can add global styles to this file, and also import other style files */
+:root {
+  --primary: #673ab7;
+  --bg: #1f2430;
+  --fg: #cbccc6;
+}
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  padding: 1rem;
+  font-family: system, -apple-system, '.SFNSText-Regular', 'San Francisco', 'Roboto', 'Segoe UI',
+    'Helvetica Neue', 'Lucida Grande', sans-serif;
+}
+
+.title-with-button {
+  display: flex;
+  align-items: center;
+
+  > * + * {
+    margin-left: 0.5rem !important;
+  }
+
+  .small {
+    font-size: 0.8rem;
+    font-weight: normal;
+  }
+}
+
+code {
+  display: block;
+  background: var(--bg);
+  color: var(--fg);
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.35rem;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+hr {
+  border-color: var(--primary);
+  border-width: 0.2rem 0 0 0;
+  border-style: solid;
+  margin-top: 0.5rem;
+}
