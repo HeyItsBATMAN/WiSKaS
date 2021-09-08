@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import { Module } from '../module/module.component';
+import { Weighting } from '../weighting/weighting.component';
 
 export class Subject {
   static newSubjectEvent = new EventEmitter<Subject>();
@@ -62,6 +63,14 @@ export class SubjectComponent implements OnInit {
 
   public addModule() {
     this.subject.modules.push(new Module());
+    this.emitChange();
+  }
+
+  public removeModule(mod: Module) {
+    const index = this.subject.modules.findIndex(m => m.id === mod.id);
+    if (index < 0) return;
+    this.subject.modules.splice(index, 1);
+    Weighting.removeByRef(mod);
     this.emitChange();
   }
 }

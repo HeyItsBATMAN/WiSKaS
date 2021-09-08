@@ -17,6 +17,12 @@ export class Weighting {
     this.moduleRef = mod.id;
     Weighting.all.push(this);
   }
+
+  public static removeByRef(mod: Module) {
+    const index = Weighting.all.findIndex(w => w.moduleRef === mod.id);
+    if (index < 0) return;
+    Weighting.all.splice(index, 1);
+  }
 }
 
 @Component({

@@ -28,9 +28,9 @@
   <span></span>
 </h3>
 
-<app-module
-  *ngFor="let mod of subject.modules"
-  (moduleChanged)="emitChange()"
-  [module]="mod"
-  [subject]="subject"
-></app-module>
+<div class="module-row" *ngFor="let mod of subject.modules">
+  <app-module (moduleChanged)="emitChange()" [module]="mod" [subject]="subject"></app-module>
+  <button mat-icon-button (click)="removeModule(mod)" matTooltip="Unwiderruflich löschen">
+    <mat-icon>delete_outline</mat-icon>
+  </button>
+</div>

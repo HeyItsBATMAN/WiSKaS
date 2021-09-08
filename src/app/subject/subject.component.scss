@@ -2,3 +2,8 @@
   display: flex;
   flex-direction: column;
 }
+
+.module-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+}

@@ -143,7 +143,8 @@ export class AppComponent {
     );
     const outcomes = new Array<number>();
     for (const mod of subject.ungraded) {
-      const weight = weights.find(w => w.moduleRef === mod.id)!;
+      const weight = weights.find(w => w.moduleRef === mod.id);
+      if (!weight) continue;
 
       const allowed = this.distributeWeights(weight.likely).filter(
         g => g >= weight.best && g <= weight.worst,
