@@ -7,18 +7,18 @@ export class Subject {
   static newSubjectEvent = new EventEmitter<Subject>();
   static Subjects = new Array<Subject>();
 
-  title: string = '';
-  modules: Module[] = new Array<Module>();
-  percentage: number = 0;
-  id = uuid();
+  title: string;
+  modules: Module[];
+  weightings: Weighting[];
+  percentage: number;
+  id: string;
 
-  constructor(obj?: Subject) {
-    if (obj) {
-      this.title = obj.title;
-      this.percentage = obj.percentage;
-      this.modules = obj.modules.map(m => new Module(m));
-      this.id = obj.id;
-    }
+  constructor(obj?: Partial<Subject>) {
+    this.title = obj?.title ?? '';
+    this.percentage = obj?.percentage ?? 0;
+    this.modules = obj?.modules?.map(m => new Module(m)) ?? [];
+    this.weightings = obj?.weightings?.map(w => new Weighting(w)) ?? [];
+    this.id = obj?.id ?? uuid();
 
     Subject.Subjects.push(this);
     Subject.newSubjectEvent.emit(this);
@@ -38,6 +38,20 @@ export class Subject {
 
   get percentageAsNum() {
     return this.percentage * 0.01;
+  }
+
+  public addModule() {
+    const mod = new Module();
+    this.modules.push(mod);
+    this.weightings.push(new Weighting(mod));
+  }
+
+  public removeModule(mod: Module) {
+    const modIndex = this.modules.findIndex(m => m.id === mod.id);
+    const weightIndex = this.weightings.findIndex(w => w.moduleRef === mod.id);
+    if (modIndex < 0 || weightIndex < 0) return;
+    this.modules.splice(modIndex, 1);
+    this.weightings.splice(weightIndex, 1);
   }
 }
 
@@ -62,15 +76,12 @@ export class SubjectComponent implements OnInit {
   }
 
   public addModule() {
-    this.subject.modules.push(new Module());
+    this.subject.addModule();
     this.emitChange();
   }
 
   public removeModule(mod: Module) {
-    const index = this.subject.modules.findIndex(m => m.id === mod.id);
-    if (index < 0) return;
-    this.subject.modules.splice(index, 1);
-    Weighting.removeByRef(mod);
+    this.subject.removeModule(mod);
     this.emitChange();
   }
 }

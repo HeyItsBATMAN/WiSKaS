@@ -5,23 +5,21 @@ import { Subject } from '../subject/subject.component';
 const GRADES = [1.0, 1.3, 1.7, 2.0, 2.3, 2.7, 3.0, 3.3, 3.7, 4.0];
 
 export class Weighting {
-  static all = new Array<Weighting>();
-
   best = 1.0;
   worst = 4.0;
   likely = 2.0;
 
   moduleRef: string;
 
-  constructor(mod: Module) {
-    this.moduleRef = mod.id;
-    Weighting.all.push(this);
-  }
-
-  public static removeByRef(mod: Module) {
-    const index = Weighting.all.findIndex(w => w.moduleRef === mod.id);
-    if (index < 0) return;
-    Weighting.all.splice(index, 1);
+  constructor(obj: Module | Weighting) {
+    if (obj instanceof Module) {
+      this.moduleRef = obj.id;
+    } else {
+      this.moduleRef = obj.moduleRef;
+      this.best = obj.best;
+      this.worst = obj.worst;
+      this.likely = obj.likely;
+    }
   }
 }
 
@@ -38,7 +36,7 @@ export class WeightingComponent implements OnInit {
   public mod!: Module;
 
   @Input('subject')
-  public subject?: Subject;
+  public subject!: Subject;
 
   public weighting?: Weighting;
 
@@ -47,8 +45,7 @@ export class WeightingComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    this.subject = Subject.Subjects.find(s => !!s.modules.find(m => m.id === this.mod.id))!;
-    this.weighting = new Weighting(this.mod);
+    this.weighting = this.subject.weightings.find(w => w.moduleRef === this.mod.id);
   }
 
   get title() {

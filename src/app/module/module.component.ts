@@ -10,7 +10,6 @@ export class Module {
   title: string = '';
   credits: number = 12;
   grade: number | undefined = undefined;
-  isGraded: boolean = false;
   id = uuid();
 
   constructor(obj?: Module) {
@@ -18,7 +17,6 @@ export class Module {
       this.title = obj.title;
       this.credits = obj.credits;
       this.grade = obj.grade;
-      this.isGraded = obj.isGraded;
       this.id = obj.id;
     }
     Module.newModuleEvent.emit(this);
@@ -39,9 +37,6 @@ export class ModuleComponent implements OnInit {
 
   @Input('subject')
   public subject!: Subject;
-
-  @Input('isPaper')
-  public isPaper = false;
 
   public possibleGrades = GRADES;
 

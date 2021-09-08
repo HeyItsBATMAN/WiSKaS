@@ -7,20 +7,58 @@
 <p>Reduzier dein Stresslevel und rechne dir mögliche Endnoten fürs Studium aus</p>
 
 <h2 class="title-with-button">
+  <span>Speichern und Laden</span>
+  <span class="small"><i>Nur im eigenen Browserspeicher</i></span>
+</h2>
+
+<div class="save-load-area">
+  <mat-form-field appearance="fill">
+    <mat-label>Abspeichern als</mat-label>
+    <input
+      matInput
+      placeholder="z.B. Erststudium Emily"
+      [value]="stateTitle$ | async"
+      (change)="updateStateTitle($event)"
+    />
+    <button
+      mat-icon-button
+      matSuffix
+      color="primary"
+      [disabled]="!(hasSubjects$ | async)"
+      (click)="saveState()"
+      matTooltip="Speicher deine Notengruppen im Browser, damit sie beim nächsten mal noch da sind"
+    >
+      <mat-icon>save</mat-icon>
+    </button>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Gespeicherte Zustände</mat-label>
+    <mat-select [(ngModel)]="selectedLoadState">
+      <mat-option *ngFor="let state of savedStates$ | async" [value]="state">
+        {{ state.title }}
+      </mat-option>
+    </mat-select>
+    <button
+      mat-icon-button
+      matSuffix
+      color="primary"
+      [disabled]="!selectedLoadState"
+      (click)="loadState(selectedLoadState!.id)"
+      matTooltip="Lade den ausgewählten Zustand"
+    >
+      <mat-icon>restart_alt</mat-icon>
+    </button>
+  </mat-form-field>
+</div>
+
+<h2 class="title-with-button">
   <span>Notengruppen</span>
   <button mat-mini-fab color="primary" (click)="addSubject()">
     <mat-icon>add</mat-icon>
   </button>
-  <button
-    mat-mini-fab
-    color="primary"
-    [disabled]="state.subjects.length === 0"
-    (click)="saveState()"
-    matTooltip="Speicher deine Notengruppen im Browser, damit sie beim nächsten mal noch da sind"
-  >
-    <mat-icon>save</mat-icon>
-  </button>
-  <button
+
+  <!--button
     mat-mini-fab
     color="primary"
     [disabled]="!hasSaveState"
@@ -28,14 +66,14 @@
     matTooltip="Lade den letzten gespeicherten Zustand"
   >
     <mat-icon>restart_alt</mat-icon>
-  </button>
+  </button-->
 </h2>
 
 <mat-accordion>
-  <mat-expansion-panel *ngFor="let subject of state.subjects">
+  <mat-expansion-panel *ngFor="let subject of subjects$ | async">
     <mat-expansion-panel-header>
       <mat-panel-title>
-        <span>{{ subject.title }}</span>
+        <span>{{ subject.title || 'Unbenannte Notengruppe' }}</span>
       </mat-panel-title>
       <mat-panel-description>
         <span>
@@ -56,7 +94,9 @@
   </mat-expansion-panel>
 </mat-accordion>
 
-<p *ngIf="!isOneHundred" class="warn">Anteile der Notengruppen ergeben nicht 100%</p>
+<p *ngIf="(hasSubjects$ | async) && !(isOneHundred$ | async)" class="warn">
+  Anteile der Notengruppen ergeben nicht 100%
+</p>
 
 <h2>Gewichtung</h2>
 
@@ -65,11 +105,14 @@
   Note am wahrscheinlichsten ist
 </p>
 
-<app-weighting
-  *ngFor="let mod of ungraded"
-  [module]="mod"
-  (weightChanged)="calculate()"
-></app-weighting>
+<ng-container *ngFor="let subject of subjects$ | async">
+  <app-weighting
+    *ngFor="let mod of subject.ungraded"
+    [subject]="subject"
+    [module]="mod"
+    (weightChanged)="calculate()"
+  ></app-weighting>
+</ng-container>
 
 <h2 class="title-with-button">
   <span>Ergebnisse</span>

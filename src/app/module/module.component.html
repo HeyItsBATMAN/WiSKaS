@@ -1,8 +1,8 @@
 <mat-form-field appearance="fill">
-  <mat-label>{{ isPaper ? 'Arbeit' : 'Modulname' }}</mat-label>
+  <mat-label>Modulname</mat-label>
   <input
     matInput
-    [placeholder]="isPaper ? 'z.B. Bachelorarbeit' : 'z.B. AM1'"
+    placeholder="z.B. AM1 oder Bachelorarbeit"
     [(ngModel)]="mod.title"
     (change)="emitChange()"
   />

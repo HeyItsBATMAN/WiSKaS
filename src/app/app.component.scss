@@ -124,3 +124,21 @@ footer {
     }
   }
 }
+
+.save-load-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 1rem;
+
+  h4 {
+    margin: 0;
+  }
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+
+  .mat-form-field {
+    height: 4rem;
+  }
+}

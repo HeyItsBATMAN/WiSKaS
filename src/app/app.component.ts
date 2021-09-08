@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject } from 'rxjs';
+import { map, filter } from 'rxjs/operators';
+import { v4 as uuid } from 'uuid';
 
 import { Subject } from './subject/subject.component';
 import { Module } from './module/module.component';
@@ -8,38 +10,29 @@ import { Weighting } from './weighting/weighting.component';
 
 const GRADES = [1.0, 1.3, 1.7, 2.0, 2.3, 2.7, 3.0, 3.3, 3.7, 4.0];
 
-const base = ({
-  subjects: [
-    {
-      title: 'Hauptfach',
-      modules: [],
-      percentage: 40,
-      id: '09b3cd25-2cd1-47f3-8164-77604e766dc0',
-    },
-    {
-      title: 'Nebenfach',
-      modules: [],
-      percentage: 40,
-      id: 'f5e6d502-ba9a-4bf0-93bd-27b16e5e3ba8',
-    },
-    {
-      title: 'Abschlussarbeit',
-      modules: [],
-      percentage: 20,
-      id: '196885c5-e5f1-4bf9-b723-ac0cbadf3cf4',
-    },
-  ],
-  papers: [],
-} as unknown) as ISaveState;
-
-interface ISaveState {
-  subjects: Subject[];
-  papers: Module[];
-}
-
 interface IDistribution {
   subject: Subject;
   outcomes: number[];
+}
+
+class SaveState {
+  public static allStates = new Array<SaveState>();
+
+  id: string;
+  title: string;
+  subjects: Subject[];
+  weightings: Weighting[];
+
+  constructor(obj?: Partial<SaveState>) {
+    this.id = obj?.id ?? uuid();
+    this.title = obj?.title ?? '';
+    this.subjects = obj?.subjects?.map(s => new Subject(s)) ?? [];
+    this.weightings = obj?.weightings?.map(w => new Weighting(w)) ?? [];
+  }
+
+  public save() {
+    localStorage.setItem('wiskas::' + this.id, JSON.stringify(this));
+  }
 }
 
 @Component({
@@ -47,23 +40,66 @@ interface IDistribution {
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
-  public state: ISaveState = {
-    subjects: new Array<Subject>(),
-    papers: new Array<Module>(),
-  };
-
+export class AppComponent implements OnInit {
   public labeledResults: { [key: string]: number } = {};
 
-  constructor(private snackbar: MatSnackBar) {
-    (window as any)['saveState'] = () => this.saveState();
-    (window as any)['loadState'] = () => this.loadState();
+  private state = new BehaviorSubject<SaveState>(new SaveState());
+  private allStates = new BehaviorSubject<SaveState[]>([]);
 
-    this.loadState();
+  public selectedLoadState: SaveState | undefined;
+
+  constructor(private snackbar: MatSnackBar) {}
+
+  get state$() {
+    return this.state.asObservable();
   }
 
-  get ungraded() {
-    return this.state.subjects.filter(s => s.ungraded.length > 0).flatMap(s => s.ungraded);
+  get stateTitle$() {
+    return this.state$.pipe(map(state => state.title));
+  }
+
+  get subjects$() {
+    return this.state$.pipe(map(state => state.subjects));
+  }
+
+  get hasSubjects$() {
+    return this.subjects$.pipe(map(subjects => subjects.length !== 0));
+  }
+
+  get ungraded$() {
+    return this.state$.pipe(
+      map(state => state.subjects.filter(s => s.ungraded.length > 0).flatMap(s => s.ungraded)),
+    );
+  }
+
+  get isOneHundred$() {
+    return this.state$.pipe(
+      map(state => state.subjects.reduce((acc, s) => acc + s.percentage, 0) === 100),
+    );
+  }
+
+  get savedStates$() {
+    return this.allStates.asObservable();
+  }
+
+  get savedStatesTitles$() {
+    return this.savedStates$.pipe(map(states => states.map(state => state.title)));
+  }
+
+  public updateStateTitle(event: Event) {
+    const target = event.target as HTMLInputElement | undefined;
+    if (!target) return;
+    this.state.getValue().title = target.value;
+    console.log(this.state.getValue());
+  }
+
+  public loadState(id: string) {
+    const state = this.allStates.getValue().find(state => state.id === id);
+    if (!state) return;
+    this.state.next(state);
+
+    setTimeout(() => this.calculate(), 100);
+    this.showMessage('Zustand geladen');
   }
 
   get distMax() {
@@ -74,14 +110,6 @@ export class AppComponent {
     return Object.values(this.labeledResults).reduce((acc, val) => acc + val, 0);
   }
 
-  get isOneHundred() {
-    return this.state.subjects.reduce((acc, s) => acc + s.percentage, 0) === 100;
-  }
-
-  get hasSaveState() {
-    return !!localStorage.getItem('saveState');
-  }
-
   public getProbability(key: string) {
     return (100 * (this.labeledResults[key] / this.distSize)).toFixed(1) + '%';
   }
@@ -90,34 +118,20 @@ export class AppComponent {
     this.snackbar.open(message, 'OK Cool!', { duration: 3000 });
   }
 
-  public loadState() {
-    const savedSubjects = localStorage.getItem('saveState');
-    this.state.subjects.splice(0, this.state.subjects.length);
-    this.state.papers.splice(0, this.state.papers.length);
-    const parsed = savedSubjects ? (JSON.parse(savedSubjects) as ISaveState) : base;
-    this.state.subjects.push(...parsed.subjects.map(s => new Subject(s)));
-    this.state.papers.push(...parsed.papers.map(s => new Module(s)));
-    setTimeout(() => this.calculate(), 100);
-    this.showMessage('Zustand geladen');
-  }
-
   public saveState() {
-    localStorage.setItem('saveState', JSON.stringify(this.state));
+    this.state.getValue().save();
     this.showMessage('Zustand gespeichert');
+    this.updateSavedStates();
   }
 
   public addSubject() {
-    this.state.subjects.push(new Subject());
+    this.state.getValue().subjects.push(new Subject());
   }
 
   public removeSubject(subject: Subject) {
-    const index = this.state.subjects.findIndex(s => s.id === subject.id);
+    const index = this.state.getValue().subjects.findIndex(s => s.id === subject.id);
     if (index < 0) return;
-    this.state.subjects.splice(index, 1);
-  }
-
-  public addPaper() {
-    this.state.papers.push(new Module());
+    this.state.getValue().subjects.splice(index, 1);
   }
 
   private distributeWeights(likely: number) {
@@ -135,7 +149,7 @@ export class AppComponent {
   }
 
   private getSubjectDistribution(subject: Subject) {
-    const weights = Weighting.all;
+    const weights = subject.weightings;
     const totalCredits = subject.totalCredits;
     const gradedSum = subject.graded.reduce(
       (acc, mod) => acc + mod.grade! * (mod.credits / totalCredits),
@@ -160,7 +174,7 @@ export class AppComponent {
   }
 
   public calculate() {
-    const dists = this.state.subjects.map(s => this.getSubjectDistribution(s));
+    const dists = this.state.getValue().subjects.map(s => this.getSubjectDistribution(s));
 
     const walk = (sums: number[]): string[] => {
       const dist = dists.pop();
@@ -178,5 +192,16 @@ export class AppComponent {
 
     this.labeledResults = Object.fromEntries(counter.entries());
     console.log(this.labeledResults);
+  }
+
+  private updateSavedStates() {
+    const parsedStates = Object.keys(localStorage)
+      .filter(k => k.startsWith('wiskas::'))
+      .map(k => JSON.parse(localStorage.getItem(k)!) as Partial<SaveState>);
+    this.allStates.next(parsedStates.map(state => new SaveState(state)));
+  }
+
+  ngOnInit() {
+    this.updateSavedStates();
   }
 }
