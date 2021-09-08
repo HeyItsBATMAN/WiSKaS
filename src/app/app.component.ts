@@ -164,7 +164,7 @@ export class AppComponent {
 
     const walk = (sums: number[]): string[] => {
       const dist = dists.pop();
-      if (!dist) return sums.map(s => s.toFixed(1));
+      if (!dist) return sums.map(s => s.toString().slice(0, 3));
       return walk(dist.flatMap(o => sums.map(s => s + o)));
     };
 
