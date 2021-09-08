@@ -8,6 +8,8 @@ import { Subject } from './subject/subject.component';
 import { Module } from './module/module.component';
 import { Weighting } from './weighting/weighting.component';
 
+import example2FachBA from '../assets/example-2fach-ba.json';
+
 const GRADES = [1.0, 1.3, 1.7, 2.0, 2.3, 2.7, 3.0, 3.3, 3.7, 4.0];
 
 interface IDistribution {
@@ -21,19 +23,19 @@ class SaveState {
   id: string;
   title: string;
   subjects: Subject[];
-  weightings: Weighting[];
 
   constructor(obj?: Partial<SaveState>) {
     this.id = obj?.id ?? uuid();
     this.title = obj?.title ?? '';
     this.subjects = obj?.subjects?.map(s => new Subject(s)) ?? [];
-    this.weightings = obj?.weightings?.map(w => new Weighting(w)) ?? [];
   }
 
   public save() {
     localStorage.setItem('wiskas::' + this.id, JSON.stringify(this));
   }
 }
+
+new SaveState(example2FachBA as SaveState).save();
 
 @Component({
   selector: 'app-root',
@@ -48,7 +50,9 @@ export class AppComponent implements OnInit {
 
   public selectedLoadState: SaveState | undefined;
 
-  constructor(private snackbar: MatSnackBar) {}
+  constructor(private snackbar: MatSnackBar) {
+    (window as any)['showState'] = () => this.state.getValue();
+  }
 
   get state$() {
     return this.state.asObservable();
@@ -78,6 +82,10 @@ export class AppComponent implements OnInit {
     );
   }
 
+  get hasEmptySubject$() {
+    return this.state$.pipe(map(state => !!state.subjects.find(s => s.modules.length === 0)));
+  }
+
   get savedStates$() {
     return this.allStates.asObservable();
   }
@@ -90,7 +98,6 @@ export class AppComponent implements OnInit {
     const target = event.target as HTMLInputElement | undefined;
     if (!target) return;
     this.state.getValue().title = target.value;
-    console.log(this.state.getValue());
   }
 
   public loadState(id: string) {
@@ -173,12 +180,23 @@ export class AppComponent implements OnInit {
     return outcomes.map(o => o * subject.percentageAsNum);
   }
 
+  private reset() {
+    this.labeledResults = {};
+  }
+
   public calculate() {
+    if (this.state.getValue().subjects.reduce((acc, s) => acc + s.percentage, 0) !== 100) {
+      return this.reset();
+    }
+
     const dists = this.state.getValue().subjects.map(s => this.getSubjectDistribution(s));
+    if (Math.max(...dists.flatMap(arr => Math.max(...arr))) === 0) {
+      return this.reset();
+    }
 
     const walk = (sums: number[]): string[] => {
       const dist = dists.pop();
-      if (!dist) return sums.map(s => s.toString().slice(0, 3));
+      if (!dist) return sums.map(s => Math.max(s, 1.01).toString().slice(0, 3));
       return walk(dist.flatMap(o => sums.map(s => s + o)));
     };
 

@@ -69,6 +69,11 @@
   </button-->
 </h2>
 
+<p>
+  Eine Notengruppe besteht aus Endnotenrelevanten Inhalten. Lade oben eines der Beispiele, um eine
+  bessere Vorstellung zu bekommen
+</p>
+
 <mat-accordion>
   <mat-expansion-panel *ngFor="let subject of subjects$ | async">
     <mat-expansion-panel-header>
@@ -94,9 +99,13 @@
   </mat-expansion-panel>
 </mat-accordion>
 
-<p *ngIf="(hasSubjects$ | async) && !(isOneHundred$ | async)" class="warn">
-  Anteile der Notengruppen ergeben nicht 100%
-</p>
+<ng-container *ngIf="hasSubjects$ | async; else noSubjects">
+  <p *ngIf="!(isOneHundred$ | async)" class="warn">Anteile der Notengruppen ergeben nicht 100%</p>
+  <p *ngIf="hasEmptySubject$ | async" class="warn">Nicht alle Gruppen haben ein Modul</p>
+</ng-container>
+<ng-template #noSubjects>
+  <p class="warn">Füge Notengruppen hinzu zum Starten</p>
+</ng-template>
 
 <h2>Gewichtung</h2>
 
